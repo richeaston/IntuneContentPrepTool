@@ -31,7 +31,7 @@ $FRM_MSICPT_Load={
 }
 
 $BTN_Source_Click={
-	#TODO: Place custom script here
+	#select source folder
 	
 	$FD_Source.ShowDialog()
 	$SourceFolder.Text = $FD_Source.SelectedPath
@@ -41,16 +41,18 @@ $BTN_Source_Click={
 }
 
 $BTNSelectSetupFilename_Click = {
-	#TODO: Place custom script here
+	#select .exe
+	$folder = $SourceFolder.Text
 	$OFD_Source.ShowDialog()
 	$Setupfile.text = $OFD_Source.SafeFileName
 	$BTN_Browse.Enabled = $true
 	$CBQuiet.Enabled = $true
+	$CBall.Enabled = $true
 	$Output.Enabled = $true
 }
 
 $BTN_Browse_Click={
-	#TODO: Place custom script here
+	#select output path
 	$FD_Output.ShowDialog()
 	$Output.Text = $FD_Output.SelectedPath
 	$BTN_Create_Intunewim.Enabled = $true
@@ -67,6 +69,8 @@ $buttonReset_Click={
 	$BTN_Browse.Enabled = $false
 	$CBQuiet.Checked = $false
 	$CBQuiet.Enabled = $false
+	$CBall.Checked = $false
+	$CBall.Enabled = $false
 	$Output.Enabled = $false
 	$BTN_Create_Intunewim.Enabled = $false
 	$buttonReset.Enabled = $false
@@ -74,22 +78,29 @@ $buttonReset_Click={
 
 
 $BTN_Create_Intunewim_Click={
-	#TODO: Place custom script here
+		
 	$filepath = $SourceFolder.text
 	$filename = $Setupfile.text
 	$outputpath = $Output.text
-	
-	if ($CBQuiet.Checked -eq $true)
+	$quiet = 0
+	$all = 0 
+	if ($CBQuiet.CheckState -eq $true)
 	{
-		$cmd = "$IntuneWinAppUtilPath -c `"$filepath`" -s `"$filename`" -o `"$outputpath`" -q"
-		$runme = "Start-Process -filepath $($cmd) -wait -Verb runAs"
-		Start-Process powershell.exe -WindowStyle Hidden -ArgumentList "$($cmd) -Verb runAs" -wait -Verbose
-	}
-	else
-	{
-		$cmd = "$IntuneWinAppUtilPath -c `"$filepath`" -s `"$filename`" -o `"$outputpath`" -q"
-		$runme = "Start-Process -filepath $($cmd) -Verb runAs"
-		Start-Process powershell.exe -WindowStyle Hidden -ArgumentList "$($cmd) -Verb runAs" -wait -Verbose
+		$quiet = 1
 	}
 	
+	if ($CBall.CheckState -eq $true)
+	{
+		$all = 1
+	}
+	
+	if ($quiet -eq 0 -and $all -eq 0)
+	{
+		$args = "-c `"$filepath`" -s `"$filename`" -o `"$outputpath`""
+	}
+	elseif ($quiet -eq 1 -and $all -eq 0)
+	{
+		$args = "-c `"$filepath`" -s `"$filename`" -o `"$outputpath`" -q"
+	}
+	Start-Process ".\IntuneWinAppUtil.exe" -WindowStyle Normal -ArgumentList $args -wait -Verbose
 }
